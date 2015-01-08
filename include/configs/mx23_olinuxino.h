@@ -19,12 +19,14 @@
 #define CONFIG_CMD_CACHE
 #define CONFIG_CMD_DHCP
 #define CONFIG_CMD_EXT2
+#define CONFIG_CMD_EXT4
 #define CONFIG_CMD_FAT
 #define CONFIG_CMD_GPIO
 #define CONFIG_CMD_LED
 #define CONFIG_CMD_MMC
 #define CONFIG_CMD_NET
 #define CONFIG_CMD_USB
+#define CONFIG_CMD_BOOTZ
 
 /* Memory configuration */
 #define CONFIG_NR_DRAM_BANKS		1		/* 1 bank of DRAM */
@@ -66,8 +68,8 @@
 #endif
 
 /* Booting Linux */
-#define CONFIG_BOOTDELAY	3
-#define CONFIG_BOOTFILE		"uImage"
+#define CONFIG_BOOTDELAY	1
+#define CONFIG_BOOTFILE		"zImage"
 #define CONFIG_LOADADDR		0x42000000
 #define CONFIG_SYS_LOAD_ADDR	CONFIG_LOADADDR
 
@@ -83,7 +85,7 @@
 		"fi ; "	\
 		"fi\0" \
 	"script=boot.scr\0"	\
-	"uimage=uImage\0" \
+	"image=zImage\0" \
 	"console=ttyAMA0\0" \
 	"fdt_file=imx23-olinuxino.dtb\0" \
 	"fdt_addr=0x41000000\0" \
@@ -91,29 +93,30 @@
 	"ip_dyn=yes\0" \
 	"mmcdev=0\0" \
 	"mmcpart=2\0" \
-	"mmcroot=/dev/mmcblk0p3 rw rootwait\0" \
+	"mmcroot=/dev/mmcblk0p2 rootwait\0" \
 	"mmcargs=setenv bootargs console=${console},${baudrate} " \
 		"root=${mmcroot}\0" \
 	"loadbootscript="  \
 		"fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${script};\0" \
 	"bootscript=echo Running bootscript from mmc ...; "	\
 		"source\0" \
-	"loaduimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${uimage}\0" \
-	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}\0" \
+	"loadimage=ext4load mmc ${mmcdev}:${mmcpart} ${loadaddr} /boot/${image}\0" \
+	"loadfdt=ext4load mmc ${mmcdev}:${mmcpart} ${fdt_addr} /boot/${fdt_file}\0" \
 	"mmcboot=echo Booting from mmc ...; " \
+		"setenv mmcroot /dev/mmcblk0p${mmcpart}; " \
 		"run mmcargs; " \
 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
 			"if run loadfdt; then " \
-				"bootm ${loadaddr} - ${fdt_addr}; " \
+				"bootz ${loadaddr} - ${fdt_addr}; " \
 			"else " \
 				"if test ${boot_fdt} = try; then " \
-					"bootm; " \
+					"bootz; " \
 				"else " \
 					"echo WARN: Cannot load the DT; " \
 				"fi; " \
 			"fi; " \
 		"else " \
-			"bootm; " \
+			"bootz; " \
 		"fi;\0" \
 	"netargs=setenv bootargs console=${console},${baudrate} " \
 		"root=/dev/nfs " \
@@ -126,10 +129,10 @@
 		"else " \
 			"setenv get_cmd tftp; " \
 		"fi; " \
-		"${get_cmd} ${uimage}; " \
+		"${get_cmd} ${image}; " \
 		"if test ${boot_fdt} = yes; then " \
 			"if ${get_cmd} ${fdt_addr} ${fdt_file}; then " \
-				"bootm ${loadaddr} - ${fdt_addr}; " \
+				"bootz ${loadaddr} - ${fdt_addr}; " \
 			"else " \
 				"if test ${boot_fdt} = try; then " \
 					"bootm; " \
@@ -138,7 +141,7 @@
 				"fi;" \
 			"fi; " \
 		"else " \
-			"bootm; " \
+			"bootz; " \
 		"fi;\0"
 
 #define CONFIG_BOOTCOMMAND \
@@ -146,7 +149,7 @@
 		"if run loadbootscript; then " \
 			"run bootscript; " \
 		"else " \
-			"if run loaduimage; then " \
+			"if run loadimage; then " \
 				"run mmcboot; " \
 			"else run netboot; " \
 			"fi; " \
