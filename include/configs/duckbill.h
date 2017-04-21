@@ -10,6 +10,8 @@
 #define CONFIG_MX28				/* i.MX28 SoC */
 #define CONFIG_MACH_TYPE	MACH_TYPE_DUCKBILL
 
+#define CONFIG_MISC_INIT_R
+
 #define CONFIG_SYS_MXS_VDD5V_ONLY
 
 /* U-Boot Commands */
