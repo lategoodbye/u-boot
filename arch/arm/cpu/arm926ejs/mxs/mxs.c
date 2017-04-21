@@ -60,6 +60,10 @@ void enable_caches(void)
 #endif
 }
 
+void invalidate_icache_all(void)
+{
+}
+
 /*
  * This function will craft a jumptable at 0x0 which will redirect interrupt
  * vectoring to proper location of U-Boot in RAM.
